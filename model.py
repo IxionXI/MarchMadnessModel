@@ -452,7 +452,7 @@ html_content = f"""
         }}
         #bracket-lines {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }}
         .tooltip {{
-            visibility: hidden;
+            display: none;
             width: 230px;
             background: #0d1424;
             color: var(--text-0);
@@ -460,20 +460,17 @@ html_content = f"""
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px;
-            position: absolute;
-            z-index: 100;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -115px;
+            position: fixed;
+            z-index: 1000;
             opacity: 0;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
+            transition: opacity 0.15s ease;
             font-size: 12.5px;
             font-weight: 400;
             line-height: 1.5;
             box-shadow: 0 12px 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }}
-        .matchup-slot:hover .tooltip {{ visibility: visible; opacity: 1; }}
+        .tooltip.visible {{ display: block; opacity: 1; }}
         .tooltip-title {{
             text-align: center;
             font-weight: 700;
@@ -525,6 +522,30 @@ html_content = f"""
         const bracketData = {json.dumps(bracket_data)};
         const container = document.getElementById("bracket");
 
+        // A single shared tooltip, attached to <body> and positioned with JS.
+        // Keeping it out of .bracket-wrapper avoids it being clipped by that
+        // element's forced overflow-y (a side effect of overflow-x: auto).
+        const tooltip = document.createElement("div");
+        tooltip.className = "tooltip";
+        document.body.appendChild(tooltip);
+
+        function positionTooltip(slot) {{
+            const rect = slot.getBoundingClientRect();
+            const gap = 10;
+            const ttRect = tooltip.getBoundingClientRect();
+
+            let top = rect.top - ttRect.height - gap;
+            if (top < 8) top = rect.bottom + gap; // not enough room above: flip below
+
+            let left = rect.left + rect.width / 2 - ttRect.width / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
+
+            tooltip.style.top = `${{top}}px`;
+            tooltip.style.left = `${{left}}px`;
+        }}
+
+        function hideTooltip() {{ tooltip.classList.remove("visible"); }}
+
         Object.keys(bracketData).forEach(roundName => {{
             const col = document.createElement("div");
             col.className = "round-column";
@@ -539,9 +560,6 @@ html_content = f"""
                 slot.className = "matchup-slot";
                 slot.innerText = slotData[0] ? slotData[0].team : "TBD";
 
-                const tooltip = document.createElement("div");
-                tooltip.className = "tooltip";
-
                 let tooltipHTML = `<div class="tooltip-title">Top Odds for This Slot</div>`;
                 slotData.forEach((teamEntry, i) => {{
                     const pct = parseFloat(teamEntry.prob) || 0;
@@ -555,12 +573,20 @@ html_content = f"""
                     `;
                 }});
 
-                tooltip.innerHTML = tooltipHTML;
-                slot.appendChild(tooltip);
+                slot.addEventListener("mouseenter", () => {{
+                    tooltip.innerHTML = tooltipHTML;
+                    tooltip.classList.add("visible");
+                    positionTooltip(slot);
+                }});
+                slot.addEventListener("mouseleave", hideTooltip);
+
                 col.appendChild(slot);
             }});
             container.appendChild(col);
         }});
+
+        document.querySelector(".bracket-wrapper").addEventListener("scroll", hideTooltip);
+        window.addEventListener("scroll", hideTooltip);
 
         function drawLines() {{
             const svg = document.getElementById("bracket-lines");
