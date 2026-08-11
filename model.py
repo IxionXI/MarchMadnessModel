@@ -339,40 +339,186 @@ print("--------------------------------------------------------------\n")
 
 html_content = f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>2026 March Madness Model Predictions</title>
     <style>
-        body {{ font-family: Arial, sans-serif; background-color: #f4f4f9; text-align: center; margin: 0; padding: 20px; }}
-        h1 {{ color: #333; }}
-        .bracket-wrapper {{ position: relative; margin-top: 30px; padding: 20px 0; overflow-x: auto; }}
-        .bracket-container {{ display: flex; justify-content: space-around; align-items: stretch; position: relative; z-index: 2; min-width: 1200px; }}
-        .round-column {{ display: flex; flex-direction: column; justify-content: space-around; flex: 1; margin: 0 15px; }}
-        .round-header {{ font-weight: bold; margin-bottom: 20px; color: #005eb8; border-bottom: 2px solid #005eb8; padding-bottom: 5px; background: #f4f4f9; }}
-        .matchup-slot {{ 
-            background: white; border: 2px solid #ccc; border-radius: 5px; padding: 10px; margin: 6px 0; 
-            cursor: pointer; position: relative; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); transition: 0.2s;
-            display: flex; justify-content: center; align-items: center; text-align: center; font-weight: bold; min-height: 25px; font-size: 14px; z-index: 5;
+        :root {{
+            --bg-0: #0a0e1a;
+            --bg-1: #111827;
+            --bg-2: #1a2440;
+            --border: rgba(255,255,255,0.08);
+            --border-hover: #4da3ff;
+            --text-0: #e8ecf5;
+            --text-1: #9aa5c4;
+            --accent: #4da3ff;
+            --accent-2: #7c5cff;
+            --gold: #f5c542;
         }}
-        .matchup-slot:hover {{ background: #005eb8; color: white; border-color: #003b73; }}
+        * {{ box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at 20% -10%, #16213d 0%, var(--bg-0) 45%) fixed;
+            color: var(--text-0);
+            text-align: center;
+            margin: 0;
+            padding: 40px 20px 60px;
+        }}
+        h1 {{
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin: 0 0 8px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }}
+        body > p {{
+            color: var(--text-1);
+            font-size: 14px;
+            max-width: 620px;
+            margin: 0 auto 10px;
+            line-height: 1.5;
+        }}
+        .bracket-wrapper {{
+            position: relative;
+            margin-top: 36px;
+            padding: 24px 0 32px;
+            overflow-x: auto;
+        }}
+        .bracket-container {{
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            position: relative;
+            z-index: 2;
+            min-width: 1200px;
+            gap: 4px;
+        }}
+        .round-column {{
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            flex: 1;
+            margin: 0 12px;
+        }}
+        .round-header {{
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            padding-bottom: 10px;
+            color: var(--text-1);
+            border-bottom: 2px solid var(--border);
+            background: transparent;
+        }}
+        .round-column:last-child .round-header {{
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }}
+        .matchup-slot {{
+            background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 10px;
+            margin: 7px 0;
+            cursor: default;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            min-height: 25px;
+            z-index: 5;
+        }}
+        .matchup-slot:hover {{
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 20px rgba(77,163,255,0.25);
+        }}
+        .round-column:last-child .matchup-slot {{
+            border-color: rgba(245,197,66,0.35);
+        }}
+        .round-column:last-child .matchup-slot:hover {{
+            border-color: var(--gold);
+            box-shadow: 0 8px 20px rgba(245,197,66,0.3);
+        }}
         #bracket-lines {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }}
         .tooltip {{
-            visibility: hidden; width: 220px; background-color: #333; color: #fff; text-align: left; 
-            border-radius: 6px; padding: 10px; position: absolute; z-index: 100; bottom: 125%; left: 50%; 
-            margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 13px; font-weight: normal; line-height: 1.5;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.3); pointer-events: none;
+            visibility: hidden;
+            width: 230px;
+            background: #0d1424;
+            color: var(--text-0);
+            text-align: left;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -115px;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            font-size: 12.5px;
+            font-weight: 400;
+            line-height: 1.5;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            pointer-events: none;
         }}
         .matchup-slot:hover .tooltip {{ visibility: visible; opacity: 1; }}
-        .tooltip-row {{ display: flex; justify-content: space-between; border-bottom: 1px solid #555; padding: 2px 0; }}
-        .tooltip-row:last-child {{ border-bottom: none; }}
-        .prob-number {{ color: #4CAF50; font-weight: bold; }}
+        .tooltip-title {{
+            text-align: center;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }}
+        .tooltip-row {{
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 6px;
+            margin: 2px 0;
+            border-radius: 4px;
+            overflow: hidden;
+        }}
+        .tooltip-bar {{
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            background: linear-gradient(90deg, rgba(77,163,255,0.28), rgba(124,92,255,0.05));
+            z-index: 0;
+        }}
+        .tooltip-rank, .tooltip-team, .prob-number {{ position: relative; z-index: 1; }}
+        .tooltip-rank {{ color: var(--text-1); width: 16px; flex-shrink: 0; }}
+        .tooltip-team {{ flex: 1; margin: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+        .prob-number {{ color: #5fe0a5; font-weight: 700; flex-shrink: 0; }}
     </style>
 </head>
 <body>
-    <h1> 2026 XGBoost Bracket Projections (10-Feature Model) </h1>
-    <p>Hover over any bracket slot to see the Top 10 teams most likely to reach that spot based on 100,000 XGBoost simulations.</p>
+    <h1>2026 XGBoost Bracket Projections</h1>
+    <p>10-feature XGBoost model &middot; 100,000 simulated brackets. Hover over any bracket slot to see the top 10 teams most likely to reach that spot.</p>
     <div class="bracket-wrapper">
-        <svg id="bracket-lines"></svg>
+        <svg id="bracket-lines">
+            <defs>
+                <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#4da3ff" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#4da3ff" stop-opacity="0.55"/>
+                </linearGradient>
+            </defs>
+        </svg>
         <div class="bracket-container" id="bracket"></div>
     </div>
     <script>
@@ -382,7 +528,7 @@ html_content = f"""
         Object.keys(bracketData).forEach(roundName => {{
             const col = document.createElement("div");
             col.className = "round-column";
-            
+
             const header = document.createElement("div");
             header.className = "round-header";
             header.innerText = roundName;
@@ -395,17 +541,20 @@ html_content = f"""
 
                 const tooltip = document.createElement("div");
                 tooltip.className = "tooltip";
-                
-                let tooltipHTML = `<div style="text-align:center; font-weight:bold; margin-bottom:5px; border-bottom:1px solid #777;">Top Odds for this Slot</div>`;
+
+                let tooltipHTML = `<div class="tooltip-title">Top Odds for This Slot</div>`;
                 slotData.forEach((teamEntry, i) => {{
+                    const pct = parseFloat(teamEntry.prob) || 0;
                     tooltipHTML += `
                         <div class="tooltip-row">
-                            <span>${{i+1}}. ${{teamEntry.team}}</span>
+                            <div class="tooltip-bar" style="width: ${{Math.min(pct, 100)}}%;"></div>
+                            <span class="tooltip-rank">${{i+1}}.</span>
+                            <span class="tooltip-team">${{teamEntry.team}}</span>
                             <span class="prob-number">${{teamEntry.prob}}</span>
                         </div>
                     `;
                 }});
-                
+
                 tooltip.innerHTML = tooltipHTML;
                 slot.appendChild(tooltip);
                 col.appendChild(slot);
@@ -415,38 +564,40 @@ html_content = f"""
 
         function drawLines() {{
             const svg = document.getElementById("bracket-lines");
-            svg.innerHTML = ""; 
-            
+            const defs = svg.querySelector("defs");
+            svg.innerHTML = "";
+            if (defs) svg.appendChild(defs);
+
             const columns = document.querySelectorAll('.round-column');
             const svgRect = svg.getBoundingClientRect();
 
             for (let c = 0; c < columns.length - 1; c++) {{
                 const currentSlots = columns[c].querySelectorAll('.matchup-slot');
                 const nextSlots = columns[c+1].querySelectorAll('.matchup-slot');
-                
+
                 currentSlots.forEach((startNode, i) => {{
-                    const nextIndex = Math.floor(i / 2); 
+                    const nextIndex = Math.floor(i / 2);
                     const endNode = nextSlots[nextIndex];
-                    
+
                     if (endNode) {{
                         const startRect = startNode.getBoundingClientRect();
                         const endRect = endNode.getBoundingClientRect();
-                        
+
                         const startX = startRect.right - svgRect.left;
                         const startY = startRect.top + startRect.height / 2 - svgRect.top;
-                        
+
                         const endX = endRect.left - svgRect.left;
                         const endY = endRect.top + endRect.height / 2 - svgRect.top;
-                        
+
                         const midX = startX + (endX - startX) / 2;
-                        
+
                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                         path.setAttribute("d", `M ${{startX}} ${{startY}} L ${{midX}} ${{startY}} L ${{midX}} ${{endY}} L ${{endX}} ${{endY}}`);
                         path.setAttribute("fill", "transparent");
-                        path.setAttribute("stroke", "#b0c4de"); 
-                        path.setAttribute("stroke-width", "3");
+                        path.setAttribute("stroke", "url(#lineGradient)");
+                        path.setAttribute("stroke-width", "2.5");
                         path.setAttribute("stroke-linejoin", "round");
-                        
+
                         svg.appendChild(path);
                     }}
                 }});
